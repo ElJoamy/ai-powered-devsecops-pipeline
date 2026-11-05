@@ -1,0 +1,11 @@
+version: 1
+epss_high: 0.1
+critical_cvss: 9.0
+high_cvss: 7.0
+rules:
+  kev_priority: P0
+  critical_priority: P1
+  high_priority: P1
+  medium_priority: P2
+  low_priority: P3
+  unknown_priority: REVIEW

@@ -1,0 +1,24 @@
+# Copy into the consumer's .github/workflows/security.yml.
+# Replace BOTH commit placeholders with the same reviewed engine commit.
+name: Consumer security
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  security:
+    uses: YOUR_ORG/YOUR_ENGINE/.github/workflows/security-assessment.yml@REPLACE_WITH_FULL_40_HEX_COMMIT
+    with:
+      engine-repository: YOUR_ORG/YOUR_ENGINE
+      engine-ref: REPLACE_WITH_FULL_40_HEX_COMMIT
+      config: .github/security/config.yaml
+      scan-types: all
+      fail-on: P1
+      retention-days: 14
+      exclusions: |
+        vendor/**
+        generated/**
+    secrets:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      SNYK_ORG: ${{ secrets.SNYK_ORG }}

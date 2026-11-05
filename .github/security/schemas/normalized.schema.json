@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Normalized security findings",
+  "type": "object",
+  "required": ["schema_version", "findings"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "metadata": {"type": "object"},
+    "scanners": {"type": "array", "items": {"type": "object"}},
+    "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}}
+  },
+  "$defs": {
+    "nullableString": {"type": ["string", "null"]},
+    "position": {"type": ["integer", "null"], "minimum": 1},
+    "strings": {"type": "array", "items": {"type": "string"}},
+    "finding": {
+      "type": "object",
+      "required": [
+        "id", "fingerprint", "tool", "tools", "type", "identifiers", "title",
+        "original_severity", "cvss_score", "cvss_vector", "file", "line",
+        "end_line", "package", "ecosystem", "installed_version", "fixed_version",
+        "rule_id", "references", "evidence", "recommendation", "scan_status",
+        "raw_sources", "resource", "reachability"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^finding-[a-f0-9]{64}$"},
+        "fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "tool": {"type": "string", "minLength": 1},
+        "tools": {"type": "array", "minItems": 1, "uniqueItems": true,
+                  "items": {"enum": ["snyk-sast", "trivy-sca", "trivy-iac"]}},
+        "type": {"enum": ["SAST", "SCA", "IaC"]},
+        "identifiers": {"$ref": "#/$defs/strings"},
+        "title": {"type": "string", "minLength": 1},
+        "description": {"$ref": "#/$defs/nullableString"},
+        "original_severity": {"type": "string", "minLength": 1},
+        "cvss_score": {"type": ["number", "null"], "minimum": 0, "maximum": 10},
+        "cvss_vector": {"$ref": "#/$defs/nullableString"},
+        "file": {"$ref": "#/$defs/nullableString"},
+        "line": {"$ref": "#/$defs/position"},
+        "end_line": {"$ref": "#/$defs/position"},
+        "start_column": {"$ref": "#/$defs/position"},
+        "end_column": {"$ref": "#/$defs/position"},
+        "package": {"$ref": "#/$defs/nullableString"},
+        "ecosystem": {"$ref": "#/$defs/nullableString"},
+        "installed_version": {"$ref": "#/$defs/nullableString"},
+        "fixed_version": {"$ref": "#/$defs/nullableString"},
+        "rule_id": {"$ref": "#/$defs/nullableString"},
+        "resource": {"$ref": "#/$defs/nullableString"},
+        "references": {"$ref": "#/$defs/strings"},
+        "evidence": {"type": "array", "items": {"type": "object"}},
+        "recommendation": {"$ref": "#/$defs/nullableString"},
+        "scan_status": {"const": "COMPLETED"},
+        "raw_sources": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "reachability": {"enum": ["UNKNOWN", "REACHABLE", "UNREACHABLE"]}
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Contextual risk (validated after normalized findings)",
+  "type": "object",
+  "required": ["schema_version", "findings"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id", "fingerprint", "original_severity", "cvss_score", "priority",
+          "contextual_risk", "risk_factors", "confidence", "evidence", "limitations"
+        ],
+        "properties": {
+          "id": {"type": "string", "pattern": "^finding-[a-f0-9]{64}$"},
+          "fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "priority": {"enum": ["P0", "P1", "P2", "P3", "REVIEW"]},
+          "contextual_risk": {
+            "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN", "NOT_ASSESSED"]
+          },
+          "epss_probability": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+          "kev_listed": {"type": ["boolean", "null"]},
+          "risk_factors": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "confidence": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+          "evidence": {"type": "array", "items": {"type": "object"}},
+          "limitations": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+application:
+  name: null
+  environment: UNKNOWN
+  business_criticality: UNKNOWN
+  internet_exposed: null
+  data_sensitivity: UNKNOWN
+  compensating_controls: []
+scan:
+  types: all
+  paths: ["."]
+  exclude:
+    - .git
+    - .venv
+    - node_modules
+    - reports
+    - graphify-out
+    - __pycache__
+    - .env
+    - .env.*
+    - "*.pem"
+    - "*.key"
+    - "*.p12"
+    - "*.pfx"
+    - .npmrc
+  timeout_seconds: 900
+  snyk_org: null
+intelligence:
+  enabled: true
+  timeout_seconds: 15
+  cache_hours: 24
+gate:
+  fail_on: null
+  fail_on_scanner_error: true

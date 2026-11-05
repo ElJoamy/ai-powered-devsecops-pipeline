@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "epss_high", "critical_cvss", "high_cvss", "rules"],
+  "properties": {
+    "version": {"const": 1},
+    "epss_high": {"type": "number", "minimum": 0, "maximum": 1},
+    "critical_cvss": {"type": "number", "minimum": 0, "maximum": 10},
+    "high_cvss": {"type": "number", "minimum": 0, "maximum": 10},
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kev_priority", "critical_priority", "high_priority",
+        "medium_priority", "low_priority", "unknown_priority"
+      ],
+      "properties": {
+        "kev_priority": {"$ref": "#/$defs/priority"},
+        "critical_priority": {"$ref": "#/$defs/priority"},
+        "high_priority": {"$ref": "#/$defs/priority"},
+        "medium_priority": {"$ref": "#/$defs/priority"},
+        "low_priority": {"$ref": "#/$defs/priority"},
+        "unknown_priority": {"$ref": "#/$defs/priority"}
+      }
+    }
+  },
+  "$defs": {"priority": {"enum": ["P0", "P1", "P2", "P3", "REVIEW"]}}
+}

@@ -1,0 +1,22 @@
+application:
+  name: consumer-service
+  environment: UNKNOWN
+  business_criticality: UNKNOWN
+  internet_exposed: null
+  data_sensitivity: UNKNOWN
+  compensating_controls: []
+scan:
+  types: all
+  paths: ["."]
+  exclude:
+    - .git
+    - vendor
+    - generated
+  timeout_seconds: 900
+intelligence:
+  enabled: true
+  timeout_seconds: 15
+  cache_hours: 24
+gate:
+  fail_on: P1
+  fail_on_scanner_error: true

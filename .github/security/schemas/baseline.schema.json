@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schema_version", "status", "coverage", "new", "unchanged",
+    "changed", "not_detected", "limitations", "summary"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "status": {"enum": ["NO_BASELINE", "COMPARED"]},
+    "coverage": {"type": "object"},
+    "new": {"type": "array", "items": {"type": "object"}},
+    "unchanged": {"type": "array", "items": {"type": "object"}},
+    "changed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fingerprint", "changed_fields", "previous", "current"]
+      }
+    },
+    "not_detected": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["baseline_status", "coverage_status", "coverage_uncertainty"],
+        "properties": {"baseline_status": {"const": "NOT_DETECTED"}}
+      }
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "summary": {
+      "type": "object",
+      "required": ["new", "unchanged", "changed", "not_detected"],
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    }
+  }
+}
