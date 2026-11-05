@@ -1,0 +1,161 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-05T16:12:33.929151+00:00",
+  "status": "NOT_RUN",
+  "reason": "No scanner reports exist to compare.",
+  "expected_scenarios": 29,
+  "expected_by_category": {
+    "SAST": 6,
+    "SCA": 6,
+    "IaC": 17
+  },
+  "observed_findings": null,
+  "matched_scenarios": null,
+  "scenarios": [
+    {
+      "scenario_id": "SAST-01",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SAST-02",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SAST-03",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SAST-04",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SAST-05",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SAST-06",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SCA-PY-01",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SCA-PY-02",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SCA-PY-03",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SCA-JS-01",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SCA-JS-02",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "SCA-JS-03",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-TF-01",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-TF-02",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-TF-03",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-TF-04",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-TF-05",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-K8S-01",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-K8S-02",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-K8S-03",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-K8S-04",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-K8S-05",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-K8S-06",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-K8S-07",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-K8S-08",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-DOCKER-01",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-DOCKER-02",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-DOCKER-03",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "scenario_id": "IAC-DOCKER-04",
+      "detection_status": "NOT_RUN",
+      "evidence": null
+    }
+  ]
+}

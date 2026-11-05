@@ -1,0 +1,18 @@
+name: devsecops-vulnerable-lab
+services:
+  backend:
+    build:
+      context: ./backend
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: "no"
+  frontend:
+    build:
+      context: ./frontend
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: "no"

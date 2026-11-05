@@ -1,0 +1,373 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-05T16:12:33.929151+00:00",
+  "overall_status": "PARTIAL",
+  "available_static_checks": "PASSED",
+  "python_executable": "/opt/miniconda3/envs/security/bin/python",
+  "python_version": "3.15.1 | packaged by Anaconda, Inc. | (main, Oct 23 2026, 00:08:15) [Clang 21.1.8 ]",
+  "checks": [
+    {
+      "name": "matrix_paths_unique_ids_and_honest_status",
+      "status": "PASSED",
+      "count": 29
+    },
+    {
+      "name": "python_syntax_and_isolated_definitions",
+      "status": "PASSED",
+      "files": [
+        "backend/app.py",
+        "backend/vulnerabilities/command_injection.py",
+        "backend/vulnerabilities/path_traversal.py",
+        "backend/vulnerabilities/sql_injection.py",
+        "backend/vulnerabilities/weak_cryptography.py"
+      ],
+      "target_python": "3.12",
+      "fixture_modules_imported": false
+    },
+    {
+      "name": "javascript_syntax:index.js",
+      "status": "PASSED",
+      "command": [
+        "node",
+        "--check",
+        "/Users/jmeneses/Documents/Seagull/Projects/personal_scripts/devsecops-vulnerable-lab/frontend/src/index.js"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "javascript_syntax:vulnerabilities.js",
+      "status": "PASSED",
+      "command": [
+        "node",
+        "--check",
+        "/Users/jmeneses/Documents/Seagull/Projects/personal_scripts/devsecops-vulnerable-lab/frontend/src/vulnerabilities.js"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "dockerfile_static_guards",
+      "status": "PASSED",
+      "dependency_installation": false,
+      "fixture_copy": false,
+      "exposed_ports": false,
+      "images_built": false
+    },
+    {
+      "name": "local_rule_yaml_and_matrix_ids",
+      "status": "PASSED",
+      "rule_ids": [
+        "lab.javascript.xss",
+        "lab.python.command-injection",
+        "lab.python.fictional-hardcoded-password",
+        "lab.python.path-traversal",
+        "lab.python.sql-injection",
+        "lab.python.weak-cryptography"
+      ],
+      "semgrep_rule_parser_executed": false,
+      "detection_verified": false
+    },
+    {
+      "name": "python_requirement_pins_and_pypi_metadata",
+      "status": "PASSED",
+      "packages": [
+        {
+          "name": "requests",
+          "version": "2.31.0",
+          "reference": "https://pypi.org/pypi/requests/2.31.0/json"
+        },
+        {
+          "name": "urllib3",
+          "version": "1.26.4",
+          "reference": "https://pypi.org/pypi/urllib3/1.26.4/json"
+        },
+        {
+          "name": "PyYAML",
+          "version": "5.3.1",
+          "reference": "https://pypi.org/pypi/PyYAML/5.3.1/json"
+        }
+      ],
+      "packages_installed": false
+    },
+    {
+      "name": "npm_lock_registry_integrity_and_dependency_closure",
+      "status": "PASSED",
+      "packages": {
+        "jquery": "3.4.1",
+        "lodash": "4.17.20",
+        "minimist": "1.2.5"
+      },
+      "tarballs_downloaded": false,
+      "packages_installed": false
+    },
+    {
+      "name": "npm_virtual_dependency_tree",
+      "status": "PASSED",
+      "command": [
+        "npm",
+        "--prefix",
+        "/Users/jmeneses/Documents/Seagull/Projects/personal_scripts/devsecops-vulnerable-lab/frontend",
+        "ls",
+        "--all",
+        "--package-lock-only",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"version\": \"0.1.0\",\n  \"name\": \"devsecops-vulnerable-lab-frontend\",\n  \"dependencies\": {\n    \"jquery\": {\n      \"version\": \"3.4.1\",\n      \"resolved\": \"https://registry.npmjs.org/jquery/-/jquery-3.4.1.tgz\",\n      \"overridden\": false\n    },\n    \"lodash\": {\n      \"version\": \"4.17.20\",\n      \"resolved\": \"https://registry.npmjs.org/lodash/-/lodash-4.17.20.tgz\",\n      \"overridden\": false\n    },\n    \"minimist\": {\n      \"version\": \"1.2.5\",\n      \"resolved\": \"https://registry.npmjs.org/minimist/-/minimist-1.2.5.tgz\",\n      \"overridden\": false\n    }\n  }\n}",
+      "stderr": ""
+    },
+    {
+      "name": "six_official_advisories_and_affected_versions",
+      "status": "PASSED",
+      "advisory_count": 6,
+      "current_trivy_database_checked": false
+    },
+    {
+      "name": "kubernetes_strict_schemas",
+      "status": "PASSED",
+      "documents": [
+        {
+          "file": "infrastructure/kubernetes/deployment.yaml",
+          "kind": "Deployment",
+          "schema": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.31.0-standalone-strict/deployment-apps-v1.json",
+          "validation_dialect": "Draft4, selected explicitly for OpenAPI-derived schemas"
+        },
+        {
+          "file": "infrastructure/kubernetes/rbac.yaml",
+          "kind": "ServiceAccount",
+          "schema": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.31.0-standalone-strict/serviceaccount-v1.json",
+          "validation_dialect": "Draft4, selected explicitly for OpenAPI-derived schemas"
+        },
+        {
+          "file": "infrastructure/kubernetes/rbac.yaml",
+          "kind": "ClusterRole",
+          "schema": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.31.0-standalone-strict/clusterrole-rbac-v1.json",
+          "validation_dialect": "Draft4, selected explicitly for OpenAPI-derived schemas"
+        },
+        {
+          "file": "infrastructure/kubernetes/rbac.yaml",
+          "kind": "ClusterRoleBinding",
+          "schema": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.31.0-standalone-strict/clusterrolebinding-rbac-v1.json",
+          "validation_dialect": "Draft4, selected explicitly for OpenAPI-derived schemas"
+        }
+      ],
+      "deployed": false
+    },
+    {
+      "name": "github_workflow_schema_and_consumer_contract",
+      "status": "PASSED",
+      "schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json",
+      "unfiltered_push": true,
+      "reusable_only": true,
+      "configured": false,
+      "reason": "Owner and both immutable SHA placeholders require real published engine values."
+    },
+    {
+      "name": "docker_compose_configuration",
+      "status": "PASSED",
+      "command": [
+        "docker",
+        "compose",
+        "-f",
+        "/Users/jmeneses/Documents/Seagull/Projects/personal_scripts/devsecops-vulnerable-lab/compose.yaml",
+        "config",
+        "--quiet"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "advisory_sources": [
+    {
+      "cve": "CVE-2024-35195",
+      "reference": "https://github.com/advisories/GHSA-9wx4-h78v-vm56",
+      "severity": "medium",
+      "cvss": {
+        "vector_string": "CVSS:3.1/AV:L/AC:H/PR:H/UI:R/S:U/C:H/I:H/A:N",
+        "score": 5.6
+      },
+      "package": {
+        "package": {
+          "ecosystem": "pip",
+          "name": "requests"
+        },
+        "vulnerable_version_range": "< 2.32.0",
+        "first_patched_version": "2.32.0",
+        "vulnerable_functions": []
+      },
+      "seeded_version": "2.31.0"
+    },
+    {
+      "cve": "CVE-2021-33503",
+      "reference": "https://github.com/advisories/GHSA-q2q7-5pp4-w6pg",
+      "severity": "high",
+      "cvss": {
+        "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+        "score": 7.5
+      },
+      "package": {
+        "package": {
+          "ecosystem": "pip",
+          "name": "urllib3"
+        },
+        "vulnerable_version_range": ">= 1.25.4, < 1.26.5",
+        "first_patched_version": "1.26.5",
+        "vulnerable_functions": []
+      },
+      "seeded_version": "1.26.4"
+    },
+    {
+      "cve": "CVE-2020-14343",
+      "reference": "https://github.com/advisories/GHSA-8q59-q68h-6hv4",
+      "severity": "critical",
+      "cvss": {
+        "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "score": 9.8
+      },
+      "package": {
+        "package": {
+          "ecosystem": "pip",
+          "name": "PyYAML"
+        },
+        "vulnerable_version_range": "< 5.4",
+        "first_patched_version": "5.4",
+        "vulnerable_functions": []
+      },
+      "seeded_version": "5.3.1"
+    },
+    {
+      "cve": "CVE-2021-23337",
+      "reference": "https://github.com/advisories/GHSA-35jh-r3h4-6jhm",
+      "severity": "high",
+      "cvss": {
+        "vector_string": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H",
+        "score": 7.2
+      },
+      "package": {
+        "package": {
+          "ecosystem": "npm",
+          "name": "lodash"
+        },
+        "vulnerable_version_range": "< 4.17.21",
+        "first_patched_version": "4.17.21",
+        "vulnerable_functions": []
+      },
+      "seeded_version": "4.17.20"
+    },
+    {
+      "cve": "CVE-2021-44906",
+      "reference": "https://github.com/advisories/GHSA-xvch-5gv4-984h",
+      "severity": "critical",
+      "cvss": {
+        "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "score": 9.8
+      },
+      "package": {
+        "package": {
+          "ecosystem": "npm",
+          "name": "minimist"
+        },
+        "vulnerable_version_range": ">= 1.0.0, < 1.2.6",
+        "first_patched_version": "1.2.6",
+        "vulnerable_functions": []
+      },
+      "seeded_version": "1.2.5"
+    },
+    {
+      "cve": "CVE-2020-11022",
+      "reference": "https://github.com/advisories/GHSA-gxr4-xjj5-5px2",
+      "severity": "medium",
+      "cvss": {
+        "vector_string": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:L/A:N",
+        "score": 6.9
+      },
+      "package": {
+        "package": {
+          "ecosystem": "npm",
+          "name": "jquery"
+        },
+        "vulnerable_version_range": ">= 1.12.0, < 3.5.0",
+        "first_patched_version": "3.5.0",
+        "vulnerable_functions": []
+      },
+      "seeded_version": "3.4.1"
+    }
+  ],
+  "scans": [
+    {
+      "scanner": "semgrep-ce",
+      "status": "NOT_RUN",
+      "reason": "Executable unavailable in PATH; no installation authorized.",
+      "json_report": null,
+      "sarif_report": null
+    },
+    {
+      "scanner": "trivy-sca",
+      "status": "NOT_RUN",
+      "reason": "Executable unavailable in PATH; no installation authorized.",
+      "json_report": null,
+      "sarif_report": null
+    },
+    {
+      "scanner": "trivy-iac",
+      "status": "NOT_RUN",
+      "reason": "Executable unavailable in PATH; no installation authorized.",
+      "json_report": null,
+      "sarif_report": null
+    },
+    {
+      "scanner": "snyk-sast",
+      "status": "NOT_RUN",
+      "reason": "No remote Actions execution; consumer reference is not configured.",
+      "json_report": null,
+      "sarif_report": null
+    }
+  ],
+  "source_sha256": {
+    ".github/workflows/security-scan.yml": "56cbfaf8444944bde5a220afa50cb24ab24d3564b112d1b195c7df1ec591ab9a",
+    ".gitignore": "51e66fd3ed6fe46729bba56109e31324e5b21b53e6d8efd7383db1b5adf664b8",
+    "CHANGELOG.md": "b3e79df056064d9cca3304342b5938fa19974a0b66f0c9ebedb2b5d08a7651cf",
+    "LICENSE": "cd3443081e9ed06d7123e2b6e1fe6c94e292d29d59e3de41db49c7fc58bd1a2e",
+    "README.md": "d8a3c1d7ff594eeb3b5bfb032d672ff4a15ae3320cb21457c0c42399dc0e83a2",
+    "backend/Dockerfile": "d16c8261b71b026574489847e61121a456234e1aab01e10c1fcb5fb7510231fa",
+    "backend/app.py": "2aaf55d7596eecf00f5a60f2f89c0304738464c9893bb2c459c0eb0e48fa2136",
+    "backend/requirements.txt": "803faf3361743e6e5bdeb5b6e6397905ecc87aa01d4b8bc1832802d196b8dc46",
+    "backend/vulnerabilities/command_injection.py": "dccb853847b3232806456c02519a12a00378f253865830705e5c52e834df1ba1",
+    "backend/vulnerabilities/path_traversal.py": "3f30f3187ee433f861129166293f3a9f996092e6cee5495a659487b71aeab551",
+    "backend/vulnerabilities/sql_injection.py": "3f80190995367170ea7fba928faebb915e62d70fff2f2bc536c921928361318f",
+    "backend/vulnerabilities/weak_cryptography.py": "5aa5c124e68b988a740915e735636da628c54bc4c4dd29a8f6c71da499f9ba8e",
+    "compose.yaml": "9a1a41ad80abf8d0bdee0ed307c6a10f71b8f22c81cee56c9b1d3fc5ce2950d9",
+    "frontend/Dockerfile": "0ce148022c2ae3d1036be0255f064c6814e37cb273d554f4c1de2625025238d4",
+    "frontend/package-lock.json": "e6681c257b4b194344c43bd77838cb6a9141096843b23cc2121aa83b6a7958e1",
+    "frontend/package.json": "5d8311905623410c186e1403b6f2a275e829b52340e0dd4e9e8977584955d6e9",
+    "frontend/src/index.js": "a3e5d2b383ce9ec51297dad020990657a6ec592b145c84b1370801dea1123a5b",
+    "frontend/src/vulnerabilities.js": "d82f05a76ae01497a004bd11647c2baf5672d7bb76521ba6b54ea09093352f7b",
+    "infrastructure/kubernetes/deployment.yaml": "4c7a6f7210f1f5b38324901731584145e18c5224d787a233b949e557786978ed",
+    "infrastructure/kubernetes/rbac.yaml": "9464041c516e2e92a0c6802a2b101455d37e1e3e9c4c6c871f8f0d28a512bde7",
+    "infrastructure/terraform/main.tf": "1fdab35cae0d398bf77dddf34878ebdfbf145f9e10841251b2cc38cd8b5916d5",
+    "infrastructure/terraform/security_groups.tf": "01b79d927e37af8685c5392deaa732b527d46b8611302d33662751e4135ca948",
+    "infrastructure/terraform/storage.tf": "40e7b404850b26ab612efb6d03532e7d2c81df3e946eab883ce1a4c3ebb63a93",
+    "security/VULNERABILITIES.md": "49e30d750169221ec54fc48e6cc6ae18c459bb015734ad4478fc5f8541bc3ba4",
+    "security/expected-findings.json": "103affb2c986e530000fc687db5eecea2a2387e7e92f06f943153d17bdff6b58",
+    "security/semgrep-rules.yaml": "938e2e0fedafcb28f9ca3c64c2da6894cb28e14d1ee8eb7b297a86df2dabdfb3"
+  },
+  "unverified": [
+    "Terraform HCL syntax/provider validation: terraform/tofu/hclfmt/hcl2 unavailable.",
+    "Semgrep CE rule validation, community coverage and actual detections.",
+    "Trivy SCA/IaC, current DB detection and actual JSON/SARIF exports.",
+    "Snyk Code and the first end-to-end remote GitHub Actions run.",
+    "Dockerfile build validation and image vulnerability analysis; images not built."
+  ],
+  "safety": {
+    "vulnerable_dependencies_installed": false,
+    "vulnerable_functions_executed": false,
+    "deployments": false,
+    "images_built": false,
+    "containers_started": false,
+    "github_repository_created": false
+  }
+}

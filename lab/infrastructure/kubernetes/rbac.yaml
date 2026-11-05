@@ -1,0 +1,28 @@
+# STATIC ANALYSIS ONLY — intentionally insecure fixtures; never apply.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lab-service-account
+  namespace: devsecops-vulnerable-lab
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: lab-wildcard-role
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: lab-wildcard-binding
+subjects:
+  - kind: ServiceAccount
+    name: lab-service-account
+    namespace: devsecops-vulnerable-lab
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: lab-wildcard-role

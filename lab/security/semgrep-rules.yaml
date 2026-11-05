@@ -1,0 +1,62 @@
+# LOCAL narrow educational Semgrep CE rules for these exact fixtures.
+# These are not community detections, general taint analysis, or production coverage.
+rules:
+  - id: lab.python.sql-injection
+    languages: [python]
+    severity: WARNING
+    message: "LOCAL educational CWE-89 fixture: interpolated SQLite query; bind parameters instead."
+    metadata:
+      cwe: "CWE-89"
+      source: local-narrow-educational
+    pattern: |
+      connection.execute(f"SELECT id, username FROM users WHERE username = '{username}'")
+
+  - id: lab.python.command-injection
+    languages: [python]
+    severity: WARNING
+    message: "LOCAL educational CWE-78 fixture: user input in a shell command; use an argument list without a shell."
+    metadata:
+      cwe: "CWE-78"
+      source: local-narrow-educational
+    pattern: |
+      subprocess.run(f"echo {user_input}", shell=True, capture_output=True, text=True, check=False)
+
+  - id: lab.python.path-traversal
+    languages: [python]
+    severity: WARNING
+    message: "LOCAL educational CWE-22 fixture: unchecked path read; enforce resolved-path containment."
+    metadata:
+      cwe: "CWE-22"
+      source: local-narrow-educational
+    pattern: |
+      (Path(base_directory) / user_path).read_text(encoding="utf-8")
+
+  - id: lab.python.weak-cryptography
+    languages: [python]
+    severity: WARNING
+    message: "LOCAL educational CWE-327 fixture: MD5 digest; choose a primitive appropriate to the security purpose."
+    metadata:
+      cwe: "CWE-327"
+      source: local-narrow-educational
+    pattern: |
+      hashlib.md5(value.encode("utf-8"))
+
+  - id: lab.python.fictional-hardcoded-password
+    languages: [python]
+    severity: WARNING
+    message: "LOCAL educational CWE-798 fixture: fictional hardcoded password, not a real credential."
+    metadata:
+      cwe: "CWE-798"
+      source: local-narrow-educational
+    pattern: |
+      password = "FICTIONAL_LAB_ONLY_NOT_A_REAL_PASSWORD"
+
+  - id: lab.javascript.xss
+    languages: [javascript]
+    severity: WARNING
+    message: "LOCAL educational CWE-79 fixture: untrusted innerHTML assignment; use textContent for plain text."
+    metadata:
+      cwe: "CWE-79"
+      source: local-narrow-educational
+    pattern: |
+      element.innerHTML = userInput;

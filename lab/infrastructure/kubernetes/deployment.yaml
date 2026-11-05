@@ -1,0 +1,30 @@
+# STATIC ANALYSIS ONLY — intentionally insecure fixtures; never apply.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab-placeholder
+  namespace: devsecops-vulnerable-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lab-placeholder
+  template:
+    metadata:
+      labels:
+        app: lab-placeholder
+    spec:
+      serviceAccountName: lab-service-account
+      automountServiceAccountToken: true
+      containers:
+        - name: placeholder
+          image: alpine:3.20
+          command: ["sleep", "infinity"]
+          securityContext:
+            privileged: true
+            runAsUser: 0
+            allowPrivilegeEscalation: true
+            readOnlyRootFilesystem: false
+            capabilities:
+              add: ["ALL"]
+          # Intentionally omit resources, seccomp, and AppArmor confinement.
