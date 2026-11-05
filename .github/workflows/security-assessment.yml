@@ -1,0 +1,469 @@
+name: Security assessment
+
+on:
+  workflow_call:
+    inputs:
+      engine-repository:
+        description: Central engine owner/repo; omit only for central self-assessment
+        type: string
+        default: ''
+      engine-ref:
+        description: Full immutable engine commit (required with engine-repository)
+        type: string
+        default: ''
+      scan-types:
+        description: all or a comma-separated combination of sast, iac, dependencies
+        type: string
+        default: all
+      snyk-org:
+        description: Optional Snyk workspace ID or slug; token account preferred workspace by default
+        type: string
+        default: ''
+      exclusions:
+        description: One literal glob pattern per line
+        type: string
+        default: ''
+      config:
+        description: Optional target-relative YAML path validated by CLI
+        type: string
+        default: ''
+      policy:
+        type: string
+        default: ''
+      baseline:
+        type: string
+        default: ''
+      retention-days:
+        type: number
+        default: 14
+      fail-on:
+        description: Empty for report-only risk thresholds; or P0/P1/P2/P3/REVIEW
+        type: string
+        default: ''
+      offline:
+        description: Disable live vulnerability intelligence; scanners may need cached databases
+        type: boolean
+        default: false
+    secrets:
+      SNYK_TOKEN:
+        required: false
+      SNYK_ORG:
+        description: Optional Snyk workspace override, including personal workspaces
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare assessment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      repository: ${{ steps.engine.outputs.repository }}
+      ref: ${{ steps.engine.outputs.ref }}
+      matrix: ${{ steps.selection.outputs.matrix }}
+    env:
+      PYTHONSAFEPATH: '1'
+    steps:
+      - name: Validate engine trust contract
+        id: engine
+        env:
+          ENGINE_REPOSITORY: ${{ inputs.engine-repository }}
+          ENGINE_REF: ${{ inputs.engine-ref }}
+          SELF_REPOSITORY: ${{ github.repository }}
+          SELF_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+          FAIL_ON: ${{ inputs.fail-on }}
+          RETENTION: ${{ inputs.retention-days }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$ENGINE_REPOSITORY" ]]; then
+            [[ "$ENGINE_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]
+            [[ "$ENGINE_REF" =~ ^[a-fA-F0-9]{40}$ ]] || {
+              echo 'Cross-repository engine requires a full immutable commit.' >&2; exit 2;
+            }
+          else
+            [[ -z "$ENGINE_REF" ]] || { echo 'Specify both engine inputs.' >&2; exit 2; }
+            ENGINE_REPOSITORY="$SELF_REPOSITORY"
+            ENGINE_REF="$SELF_SHA"
+          fi
+          [[ -z "$FAIL_ON" || "$FAIL_ON" =~ ^(P0|P1|P2|P3|REVIEW)$ ]]
+          [[ "$RETENTION" =~ ^[0-9]+$ && "$RETENTION" -ge 1 && "$RETENTION" -le 90 ]]
+          printf 'repository=%s\nref=%s\n' "$ENGINE_REPOSITORY" "$ENGINE_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout trusted engine
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ steps.engine.outputs.repository }}
+          ref: ${{ steps.engine.outputs.ref }}
+          path: engine
+          persist-credentials: false
+          submodules: false
+          lfs: false
+
+      - name: Set up engine Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
+      - name: Install trusted engine dependencies
+        id: dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check \
+            -r "$GITHUB_WORKSPACE/engine/.github/security/requirements.txt"
+
+      - name: Resolve requested scan types
+        id: selection
+        env:
+          SCAN_TYPES: ${{ inputs.scan-types }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          matrix="$(python "$GITHUB_WORKSPACE/engine/.github/security/scripts/cli.py" select \
+            --scan-types "$SCAN_TYPES" --matrix)"
+          printf 'matrix=%s\n' "$matrix" >> "$GITHUB_OUTPUT"
+
+      - name: Publish preparation summary
+        if: ${{ always() }}
+        env:
+          JOB_STATUS: ${{ job.status }}
+          MATRIX: ${{ steps.selection.outputs.matrix }}
+        shell: bash
+        run: |
+          printf '## Security preparation: %s\n\nSelected scanner jobs: `%s`\n\n' \
+            "$JOB_STATUS" "${MATRIX:-UNAVAILABLE}" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Selected scanners run independently; reporting and the final gate follow collection.\n' \
+            >> "$GITHUB_STEP_SUMMARY"
+
+  scan:
+    name: Scan / ${{ matrix.scan }}
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    env:
+      PYTHONSAFEPATH: '1'
+      SECURITY_ENGINE_REF: ${{ needs.prepare.outputs.ref }}
+      SNYK_IMAGE: snyk/snyk:linux@sha256:f3db1fcb11a1d4f969e6b3c3032057d215ea1a616728bb886622575b7fb75e4f
+    steps:
+      - name: Checkout trusted engine
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ needs.prepare.outputs.repository }}
+          ref: ${{ needs.prepare.outputs.ref }}
+          path: engine
+          persist-credentials: false
+          submodules: false
+          lfs: false
+
+      - name: Checkout consumer target as data
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          path: target
+          persist-credentials: false
+          submodules: false
+          lfs: false
+
+      - name: Set up engine Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
+      - name: Install trusted engine dependencies
+        id: dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check \
+            -r "$GITHUB_WORKSPACE/engine/.github/security/requirements.txt"
+
+      - name: Set up Trivy on the Actions runner
+        if: ${{ matrix.scan != 'sast' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_ACTIONS" == true && "$RUNNER_OS" == Linux && "$(uname -m)" == x86_64 ]]
+          readonly TRIVY_VERSION=0.74.0
+          bin_dir="$RUNNER_TEMP/security-bin"
+          work="$(mktemp -d "$RUNNER_TEMP/security-downloads.XXXXXX")"
+          mkdir -p "$bin_dir"
+          fetch() {
+            curl --fail --silent --show-error --location --retry 3 \
+              --proto '=https' --proto-redir '=https' "$1" --output "$2"
+          }
+          verify() {
+            local digest
+            digest="$(awk -v file="$2" '$2 == file || $2 == "*" file {print $1}' "$1")"
+            [[ "$digest" =~ ^[a-fA-F0-9]{64}$ ]] || {
+              echo "Missing or ambiguous checksum for $2" >&2; exit 1;
+            }
+            (cd "$work"; printf '%s  %s\n' "$digest" "$2" | sha256sum --check --strict -)
+          }
+          asset="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          base="https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}"
+          fetch "$base/$asset" "$work/$asset"
+          fetch "$base/trivy_${TRIVY_VERSION}_checksums.txt" "$work/trivy-checksums"
+          verify "$work/trivy-checksums" "$asset"
+          tar -xzf "$work/$asset" -C "$work" trivy
+          install -m 0755 "$work/trivy" "$bin_dir/trivy"
+          printf '%s\n' "$bin_dir" >> "$GITHUB_PATH"
+
+      - name: Pull Snyk Code container as in the release action
+        if: ${{ matrix.scan == 'sast' }}
+        env:
+          SNYK_TOKEN: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false) && github.actor != 'dependabot[bot]' && secrets.SNYK_TOKEN || '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$SNYK_TOKEN" ]]; then
+            docker pull "$SNYK_IMAGE"
+          else
+            echo '::warning::Selected SAST requires SNYK_TOKEN; the report will record missing coverage and the gate will fail.'
+          fi
+
+      - name: Collect selected scanner evidence
+        if: ${{ always() && steps.dependencies.outcome == 'success' }}
+        env:
+          CONFIG: ${{ inputs.config }}
+          POLICY: ${{ inputs.policy }}
+          BASELINE: ${{ inputs.baseline }}
+          EXCLUSIONS: ${{ inputs.exclusions }}
+          SCAN_TYPES: ${{ matrix.scan }}
+          OFFLINE: ${{ inputs.offline }}
+          FAIL_ON: ${{ inputs.fail-on }}
+          SNYK_ORG: ${{ matrix.scan == 'sast' && (inputs.snyk-org || vars.SNYK_ORG || secrets.SNYK_ORG) || '' }}
+          SNYK_TOKEN: ${{ matrix.scan == 'sast' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false) && github.actor != 'dependabot[bot]' && secrets.SNYK_TOKEN || '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(collect --repo "$GITHUB_WORKSPACE/target" --output "$RUNNER_TEMP/security-scan" --scan-types "$SCAN_TYPES")
+          [[ -z "$CONFIG" ]] || args+=(--config "$CONFIG")
+          [[ -z "$POLICY" ]] || args+=(--policy "$POLICY")
+          [[ -z "$BASELINE" ]] || args+=(--baseline "$BASELINE")
+          while IFS= read -r pattern || [[ -n "$pattern" ]]; do
+            pattern="${pattern%$'\r'}"
+            [[ -z "$pattern" ]] || args+=("--exclude=$pattern")
+          done <<< "$EXCLUSIONS"
+          [[ "$OFFLINE" != true ]] || args+=(--offline)
+          [[ -z "$FAIL_ON" ]] || args+=(--fail-on "$FAIL_ON")
+          python "$GITHUB_WORKSPACE/engine/.github/security/scripts/cli.py" "${args[@]}"
+
+      - name: Upload scanner evidence even on failure
+        if: ${{ always() }}
+        id: publish
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: security-scan-${{ matrix.scan }}
+          path: ${{ runner.temp }}/security-scan/
+          retention-days: ${{ inputs.retention-days }}
+          if-no-files-found: error
+          include-hidden-files: false
+          overwrite: true
+
+      - name: Publish scanner summary
+        if: ${{ always() }}
+        env:
+          STAGE: Scan / ${{ matrix.scan }}
+          ARTIFACT_URL: ${{ steps.publish.outputs.artifact-url }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          script="$GITHUB_WORKSPACE/engine/.github/security/scripts/write_actions_summary.py"
+          if [[ -f "$script" ]]; then
+            python "$script" --reports "$RUNNER_TEMP/security-scan" \
+              --output "$GITHUB_STEP_SUMMARY" --stage "$STAGE" \
+              --artifact-url "$ARTIFACT_URL" --job-status "$JOB_STATUS"
+          else
+            printf '## Scanner evidence unavailable\n\nTrusted engine checkout failed; no clean result can be claimed.\n' \
+              >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+  consolidate:
+    name: Consolidate and report
+    needs: [prepare, scan]
+    if: ${{ always() && needs.prepare.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONSAFEPATH: '1'
+      SECURITY_ENGINE_REF: ${{ needs.prepare.outputs.ref }}
+    steps:
+      - name: Checkout trusted engine
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ needs.prepare.outputs.repository }}
+          ref: ${{ needs.prepare.outputs.ref }}
+          path: engine
+          persist-credentials: false
+          submodules: false
+          lfs: false
+
+      - name: Checkout consumer target as data
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          path: target
+          persist-credentials: false
+          submodules: false
+          lfs: false
+
+      - name: Set up engine Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
+      - name: Install trusted engine dependencies
+        id: dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check \
+            -r "$GITHUB_WORKSPACE/engine/.github/security/requirements.txt"
+
+      - name: Download isolated scanner artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: security-scan-*
+          path: ${{ runner.temp }}/security-scans
+          merge-multiple: false
+
+      - name: Normalize, prioritize, compare and generate reports
+        if: ${{ always() && steps.dependencies.outcome == 'success' }}
+        env:
+          CONFIG: ${{ inputs.config }}
+          POLICY: ${{ inputs.policy }}
+          BASELINE: ${{ inputs.baseline }}
+          EXCLUSIONS: ${{ inputs.exclusions }}
+          SCAN_TYPES: ${{ inputs.scan-types }}
+          OFFLINE: ${{ inputs.offline }}
+          FAIL_ON: ${{ inputs.fail-on }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(consolidate --repo "$GITHUB_WORKSPACE/target" \
+            --output "$RUNNER_TEMP/security-reports" --artifacts "$RUNNER_TEMP/security-scans" \
+            --scan-types "$SCAN_TYPES")
+          [[ -z "$CONFIG" ]] || args+=(--config "$CONFIG")
+          [[ -z "$POLICY" ]] || args+=(--policy "$POLICY")
+          [[ -z "$BASELINE" ]] || args+=(--baseline "$BASELINE")
+          while IFS= read -r pattern || [[ -n "$pattern" ]]; do
+            pattern="${pattern%$'\r'}"
+            [[ -z "$pattern" ]] || args+=("--exclude=$pattern")
+          done <<< "$EXCLUSIONS"
+          [[ "$OFFLINE" != true ]] || args+=(--offline)
+          [[ -z "$FAIL_ON" ]] || args+=(--fail-on "$FAIL_ON")
+          python "$GITHUB_WORKSPACE/engine/.github/security/scripts/cli.py" "${args[@]}"
+
+      - name: Upload assessment before enforcing gate
+        if: ${{ always() }}
+        id: publish
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: security-assessment
+          path: ${{ runner.temp }}/security-reports/
+          retention-days: ${{ inputs.retention-days }}
+          if-no-files-found: error
+          include-hidden-files: false
+          overwrite: true
+
+      - name: Publish consolidated security summary
+        if: ${{ always() }}
+        env:
+          ARTIFACT_URL: ${{ steps.publish.outputs.artifact-url }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          script="$GITHUB_WORKSPACE/engine/.github/security/scripts/write_actions_summary.py"
+          if [[ -f "$script" ]]; then
+            python "$script" --reports "$RUNNER_TEMP/security-reports" \
+              --output "$GITHUB_STEP_SUMMARY" --stage 'Consolidated assessment' \
+              --artifact-url "$ARTIFACT_URL" --job-status "$JOB_STATUS"
+          else
+            printf '## Security report unavailable\n\nTrusted engine checkout failed; no clean result can be claimed.\n' \
+              >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+  gate:
+    name: Verify evidence and enforce gate
+    needs: [prepare, consolidate]
+    if: ${{ always() && needs.prepare.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PYTHONSAFEPATH: '1'
+    steps:
+      - name: Checkout trusted engine
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ needs.prepare.outputs.repository }}
+          ref: ${{ needs.prepare.outputs.ref }}
+          path: engine
+          persist-credentials: false
+          submodules: false
+          lfs: false
+
+      - name: Set up engine Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
+      - name: Install trusted engine dependencies
+        id: dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check \
+            -r "$GITHUB_WORKSPACE/engine/.github/security/requirements.txt"
+
+      - name: Download final assessment
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: security-assessment
+          path: ${{ runner.temp }}/security-reports
+
+      - name: Verify manifest and enforce security gate
+        if: ${{ always() && steps.dependencies.outcome == 'success' }}
+        env:
+          REPORT_RESULT: ${{ needs.consolidate.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python "$GITHUB_WORKSPACE/engine/.github/security/scripts/cli.py" gate \
+            --output "$RUNNER_TEMP/security-reports"; then
+            gate_status=0
+          else
+            gate_status=$?
+          fi
+          if [[ "$REPORT_RESULT" != success ]]; then
+            echo '::error::Consolidation or report publication did not complete successfully.'
+            exit 1
+          fi
+          exit "$gate_status"
+
+      - name: Publish final gate summary
+        if: ${{ always() }}
+        env:
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          script="$GITHUB_WORKSPACE/engine/.github/security/scripts/write_actions_summary.py"
+          if [[ -f "$script" ]]; then
+            python "$script" --reports "$RUNNER_TEMP/security-reports" \
+              --output "$GITHUB_STEP_SUMMARY" --stage 'Final security gate' \
+              --job-status "$JOB_STATUS"
+          else
+            printf '## Security gate unavailable\n\nTrusted engine checkout failed; verification could not complete.\n' \
+              >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
